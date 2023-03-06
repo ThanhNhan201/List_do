@@ -1,27 +1,15 @@
 from django.shortcuts import render
-
-# from django.http.response import JsonResponse
 from rest_framework.response import Response
-# from rest_framework.parsers import JSONParser
-from rest_framework import status, generics, viewsets
+from rest_framework import status, generics
 from rest_framework.views import APIView
-# from rest_framework import permissions
 from rest_framework import serializers
 from .models import ListDo
 from .serializers import ToDoListSerializer
-
-
-# def update(self, request):
-#     obj = ListDo.objects.all()
-#     ListDo.objects.bulk_update(obj, ['order'])
-
 
 class ToDoListApiView(APIView):
     def get(self, request):
         # obj = ListDo.objects.all()
         obj = ListDo.objects.filter(removed=False)
-        # color_bg = request.data.get('color_bg')
-
         serializer = ToDoListSerializer(obj, many=True)
         return Response(serializer.data, status=200)
 
@@ -37,7 +25,6 @@ class ToDoListApiView(APIView):
         for obj in todo:
             obj.removed = True
             serializer = ToDoListSerializer(data=obj)
-
             if serializer.is_valid():
                 serializer.save()
             obj.save()
@@ -61,9 +48,7 @@ class ToDoDetailView(APIView):
         except ListDo.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
-
         serializer = ToDoListSerializer(obj, data=request.data)
-
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
@@ -76,64 +61,69 @@ class ToDoDetailView(APIView):
         except ListDo.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
-
         # obj.delete()
         obj.removed = True
         serializer = ToDoListSerializer(data=obj)
-
         if serializer.is_valid():
             serializer.save()
         obj.save()
         return Response({'msg': 'deleted'}, status=status.HTTP_204_NO_CONTENT)
 
+# class finish(generics.UpdateAPIView):
+#     serializer_class = ToDoListSerializer
+#     model = ListDo
+#     def put(self, request, id, *args, **kwargs):
+#         try:
+#             queryset = ListDo.objects.get(id=id)
+#         except ListDo.DoesNotExist:
+#             msg = {"msg": "not found"}
+#             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+#         # queryset = self.filter_queryset(self.get_queryset())
+#         # queryset = ListDo.objects.get(id=id)
+#         queryset.is_completed = True
+#         serializer = serializers(queryset)
+#         # print(queryset)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class finish(generics.UpdateAPIView):
+    queryset = ListDo.objects.filter(removed=False)
     serializer_class = ToDoListSerializer
-    model = ListDo
-    # permission_classes = (IsAuthenticated,)
     def put(self, request, id, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        # instances = list(queryset)
+        # print(instances)
         try:
             queryset = ListDo.objects.get(id=id)
         except ListDo.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
-        # queryset = self.filter_queryset(self.get_queryset())
-        # queryset = ListDo.objects.get(id=id)
+            # queryset = self.filter_queryset(self.get_queryset())
+            # queryset = ListDo.objects.get(id=id)
         queryset.is_completed = True
         serializer = serializers(queryset)
-        # print(queryset)
+            # print(queryset)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-# def finish(request, id):
-#     try:
-#         obj = ListDo.objects.get(id=id)
-#     except ListDo.DoesNotExist:
-#         msg = {"msg": "not found"}
-#         return Response(msg, status=status.HTTP_400_BAD_REQUEST)
-#     obj.is_completed = True
-#     serializer = ToDoListSerializer(data=obj)
-#     if serializer.is_valid():
-#         serializer.save()
-#         return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UpdateOrder(generics.ListCreateAPIView):
-    queryset = ListDo.objects.all()
+class UpdateOrder(generics.UpdateAPIView):
+    # queryset = ListDo.objects.all()
+    queryset = ListDo.objects.filter(removed=False)
     serializer_class = ToDoListSerializer
-
     def put(self, request, *args, **kwargs):
-
         queryset = self.filter_queryset(self.get_queryset())
         instances = list(queryset)
+        print(instances)
         count = len(instances)
-        # data = {}
+        # data = []
         # for i in range(count):
-        #     data = dict(list(data.items()) + list(request.data.items()))
+        #     x = data.request
+        #     data = np.concatenate((data, x), axis=0)
         data = [request.data] * count
         # import array as arr
         # a = arr.array('d', [data])
@@ -144,7 +134,6 @@ class UpdateOrder(generics.ListCreateAPIView):
         return Response(status=204)
 
     def perform_list_update(self, serializer):
-        # for
         for instance, data in zip(serializer.instance, serializer.validated_data):
             for attr, value in data.items():
                 setattr(instance, attr, value)

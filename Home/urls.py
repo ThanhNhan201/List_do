@@ -5,7 +5,7 @@ from .views import ToDoListApiView, ToDoDetailView, UpdateOrder, finish
 
 
 urlpatterns = [
-    path('api/<int:id>/', ToDoDetailView.as_view()),
+    path('api/<int:id>', ToDoDetailView.as_view()),
     path('api/', ToDoListApiView.as_view()),
     # url(r'^api/Home/(?P<pk>[0-9]+)$', views.ToDoList_detail),
     path('api/update', UpdateOrder.as_view()),
