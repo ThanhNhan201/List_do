@@ -3,7 +3,6 @@ from django.urls import path
 from . import views
 from .views import ToDoListApiView, ToDoDetailView, UpdateOrder, finish
 
-
 urlpatterns = [
     path('api/<int:id>', ToDoDetailView.as_view()),
     path('api/', ToDoListApiView.as_view()),

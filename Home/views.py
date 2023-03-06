@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework import status, generics
+from rest_framework import status, generics,viewsets
 from rest_framework.views import APIView
 from rest_framework import serializers
 from .models import ListDo
@@ -88,28 +88,20 @@ class ToDoDetailView(APIView):
 #             return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class finish(generics.UpdateAPIView):
+class finish(generics.GenericAPIView):
     queryset = ListDo.objects.filter(removed=False)
     serializer_class = ToDoListSerializer
-    def put(self, request, id, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        # instances = list(queryset)
-        # print(instances)
-        try:
-            queryset = ListDo.objects.get(id=id)
-        except ListDo.DoesNotExist:
-            msg = {"msg": "not found"}
-            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
-            # queryset = self.filter_queryset(self.get_queryset())
-            # queryset = ListDo.objects.get(id=id)
+    lookup_field = 'id'
+    print('cc')
+    def finish(self, request, id):
+        print('huhu')
+        # queryset = ListDo.objects.filter(id=id).update(is_completed=True)
+        queryset = ListDo.objects.filter(id=id)
         queryset.is_completed = True
         serializer = serializers(queryset)
-            # print(queryset)
+        # print(serializer)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class UpdateOrder(generics.UpdateAPIView):
     # queryset = ListDo.objects.all()
