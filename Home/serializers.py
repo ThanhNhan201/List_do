@@ -2,7 +2,14 @@ from rest_framework import serializers
 from .models import ListDo, List
 
 
+class ListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = List
+        fields = '__all__'
+
+
 class ToDoListSerializer(serializers.ModelSerializer):
+    list = ListSerializer()
     class Meta:
         model = ListDo
         fields = (
@@ -14,10 +21,6 @@ class ToDoListSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'removed',
+            'list',
         )
 
-class ListSerializer(serializers.ModelSerializer):
-    todo = ToDoListSerializer(many=True, read_only=True)
-    class Meta:
-        models = List
-        fields = '__all__'

@@ -4,7 +4,8 @@ from rest_framework import status, generics,viewsets
 from rest_framework.views import APIView
 from rest_framework import serializers
 from .models import ListDo, List
-from .serializers import ToDoListSerializer, ListSerializer
+from .serializers import ToDoListSerializer
+    # ListSerializer
 
 class ToDoListApiView(APIView):
     def get(self, request):
@@ -13,8 +14,8 @@ class ToDoListApiView(APIView):
         serializer = ToDoListSerializer(obj, many=True)
         return Response(serializer.data, status=200)
 
-    def post(self, reqtuest):
-        serializer = ToDoListSerializer(data=reqtuest.data)
+    def post(self, request):
+        serializer = ToDoListSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
