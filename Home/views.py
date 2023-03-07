@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status, generics,viewsets
 from rest_framework.views import APIView
 from rest_framework import serializers
-from .models import ListDo
-from .serializers import ToDoListSerializer
+from .models import ListDo, List
+from .serializers import ToDoListSerializer, ListSerializer
 
 class ToDoListApiView(APIView):
     def get(self, request):
@@ -23,6 +23,7 @@ class ToDoListApiView(APIView):
     def delete(self, request):
         todo = ListDo.objects.all()
         for obj in todo:
+            # obj.delete()
             obj.removed = True
             serializer = ToDoListSerializer(data=obj)
             if serializer.is_valid():
@@ -88,22 +89,26 @@ class ToDoDetailView(APIView):
 #             return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class finish(generics.GenericAPIView):
-    queryset = ListDo.objects.filter(removed=False)
-    serializer_class = ToDoListSerializer
-    lookup_field = 'id'
-    print('cc')
-    def finish(self, request, id):
-        print('huhu')
-        # queryset = ListDo.objects.filter(id=id).update(is_completed=True)
-        queryset = ListDo.objects.filter(id=id)
-        queryset.is_completed = True
-        serializer = serializers(queryset)
-        # print(serializer)
-        if serializer.is_valid():
-            serializer.save()
+# class finish(generics.UpdateAPIView):
+#     queryset = ListDo.objects.filter(removed=False)
+#     serializer_class = ToDoListSerializer
+#     lookup_field = 'id'
+#     print('cc')
+#     def finish(self, request, id):
+#         print('huhu')
+#         # queryset = ListDo.objects.filter(id=id).update(is_completed=True)
+#         queryset = ListDo.objects.filter(id=id)
+#         queryset.is_completed = True
+#         serializer = serializers(queryset)
+#         # print(serializer)
+#         if serializer.is_valid():
+#             serializer.save()
 
-class UpdateOrder(generics.UpdateAPIView):
+class UpdateOrder(generics.ListCreateAPIView):
+    def get(self, request):
+        obj = ListDo.objects.filter(removed=False)
+        serializer = ToDoListSerializer(obj, many=True)
+        return Response(serializer.data, status=200)
     # queryset = ListDo.objects.all()
     queryset = ListDo.objects.filter(removed=False)
     serializer_class = ToDoListSerializer
@@ -116,7 +121,7 @@ class UpdateOrder(generics.UpdateAPIView):
         # for i in range(count):
         #     x = data.request
         #     data = np.concatenate((data, x), axis=0)
-        data = [request.data] * count
+        data = [request.data]
         # import array as arr
         # a = arr.array('d', [data])
         print(data)
