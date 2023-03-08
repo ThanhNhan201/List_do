@@ -17,10 +17,13 @@ class ListDo(admin.ModelAdmin):
 
 @admin.register(List)
 class List(admin.ModelAdmin):
-    list_display = ('list_create_at',
+    list_display = (
+                    'id',
+                    'list_create_at',
                     'list_update_at',
                     'list_removed',
                     'ping',
-                    'list_completed'
+                    'list_completed',
+                    # 'todo'
                     )
 # Register your models here.

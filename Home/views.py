@@ -4,10 +4,12 @@ from rest_framework import status, generics,viewsets
 from rest_framework.views import APIView
 from rest_framework import serializers
 from .models import ListDo, List
-from .serializers import ToDoListSerializer
+from .serializers import ToDoListSerializer, ListSerializer
     # ListSerializer
 
-class ToDoListApiView(APIView):
+class ToDoListApiView(generics.ListCreateAPIView):
+    queryset = ListDo.objects.filter(removed=False)
+    serializer_class = ToDoListSerializer
     def get(self, request):
         # obj = ListDo.objects.all()
         obj = ListDo.objects.filter(removed=False)
@@ -15,6 +17,7 @@ class ToDoListApiView(APIView):
         return Response(serializer.data, status=200)
 
     def post(self, request):
+
         serializer = ToDoListSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -110,8 +113,8 @@ class UpdateOrder(generics.ListCreateAPIView):
         obj = ListDo.objects.filter(removed=False)
         serializer = ToDoListSerializer(obj, many=True)
         return Response(serializer.data, status=200)
-    # queryset = ListDo.objects.all()
-    queryset = ListDo.objects.filter(removed=False)
+    queryset = ListDo.objects.all()
+    # queryset = ListDo.objects.filter(removed=False)
     serializer_class = ToDoListSerializer
     def put(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -122,7 +125,7 @@ class UpdateOrder(generics.ListCreateAPIView):
         # for i in range(count):
         #     x = data.request
         #     data = np.concatenate((data, x), axis=0)
-        data = [request.data]
+        data = [request.data] * count
         # import array as arr
         # a = arr.array('d', [data])
         print(data)
@@ -137,5 +140,16 @@ class UpdateOrder(generics.ListCreateAPIView):
                 setattr(instance, attr, value)
             instance.save()
 
+###################
+class ListAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        obj = List.objects.all()
+        serializer = ListSerializer(obj, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-
+    def post(self, request, *args, **kwargs):
+        serializer = ListSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
