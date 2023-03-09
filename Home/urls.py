@@ -1,6 +1,6 @@
 from django.urls import re_path as url
 from django.urls import path
-from . import views
+# from . import views
 from .views import ToDoListApiView, ToDoDetailView, UpdateOrder, ListAPIView
 
 urlpatterns = [
@@ -9,6 +9,4 @@ urlpatterns = [
     # url(r'^api/Home/(?P<pk>[0-9]+)$', views.ToDoList_detail),
     path('api/update', UpdateOrder.as_view()),
     path('api/list', ListAPIView.as_view()),
-    # path('api/finish/<int:id>', views.finish),
-    # path('api/finish/<int:id>', finish.as_view()),
 ]

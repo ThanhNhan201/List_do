@@ -7,7 +7,6 @@ class List(models.Model):
     list_removed = models.BooleanField(default=False)
     ping = models.BooleanField(default=False)
     list_completed = models.BooleanField(default=False)
-    # todo = models.ForeignKey(ListDo, on_delete=models.CASCADE, blank=True, null=True)
 
 
 class ListDo(models.Model):

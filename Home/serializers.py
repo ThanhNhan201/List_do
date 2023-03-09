@@ -12,7 +12,6 @@ class ListSerializer(serializers.ModelSerializer):
             'list_removed',
             'ping',
             'list_completed',
-            # 'todo',
         )
 
 class ToDoListSerializer(serializers.ModelSerializer):
