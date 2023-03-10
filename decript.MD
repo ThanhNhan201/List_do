@@ -61,7 +61,8 @@ INSTALLED_APPS = [
 ```
 
 Chúng ta có thể cài đặt cấu hình của DataBase bằng mục DATABASES trong file setting.py. Ở đây, tôi sử dụng SQLite như mặc định của django nên không sửa.
-setup môi trường bằng lệnh:
+
+Tôi sẽ setup môi trường bằng lệnh:
 
 ```console
 python -m venv venv
