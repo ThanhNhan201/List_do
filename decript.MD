@@ -592,14 +592,18 @@ output:
 
 Tương tự như phương thức DELETE ở trên, thì phương thức DELETE ở đây cũng chỉ gáng biến `removed`=False chứ không xóa khỏi CSDL.
 
-##
+## `http://127.0.0.1:8000/api/update`
 
 - Update (PUT)
+
+Hàm Update ở đây chỉ hỗ trợ ghi đè tất cả giá trị mà font-end gửi xuống.
 
 input :
 
 ```API
-[<QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>, <QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>, <QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>]
+[<QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>,
+ <QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>,
+ <QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>]
 ```
 
 output :
