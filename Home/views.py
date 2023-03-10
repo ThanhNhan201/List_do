@@ -74,40 +74,6 @@ class ToDoDetailView(APIView):
         obj.save()
         return Response({'msg': 'deleted'}, status=status.HTTP_204_NO_CONTENT)
 
-# class finish(generics.UpdateAPIView):
-#     serializer_class = ToDoListSerializer
-#     model = ListDo
-#     def put(self, request, id, *args, **kwargs):
-#         try:
-#             queryset = ListDo.objects.get(id=id)
-#         except ListDo.DoesNotExist:
-#             msg = {"msg": "not found"}
-#             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
-#         # queryset = self.filter_queryset(self.get_queryset())
-#         # queryset = ListDo.objects.get(id=id)
-#         queryset.is_completed = True
-#         serializer = serializers(queryset)
-#         # print(queryset)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# class finish(generics.UpdateAPIView):
-#     queryset = ListDo.objects.filter(removed=False)
-#     serializer_class = ToDoListSerializer
-#     lookup_field = 'id'
-#     print('cc')
-#     def finish(self, request, id):
-#         print('huhu')
-#         # queryset = ListDo.objects.filter(id=id).update(is_completed=True)
-#         queryset = ListDo.objects.filter(id=id)
-#         queryset.is_completed = True
-#         serializer = serializers(queryset)
-#         # print(serializer)
-#         if serializer.is_valid():
-#             serializer.save()
-
 class UpdateOrder(generics.ListCreateAPIView):
     def get(self, request):
         obj = ListDo.objects.filter(removed=False)
@@ -153,6 +119,51 @@ class ListAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+    def delete(self, request):
+        list_todo = List.objects.all()
+        for obj in list_todo:
+            obj.list_removed = True
+            serializer = ListSerializer(data=obj)
+            if serializer.is_valid():
+                serializer.save()
+            obj.save()
+        return Response({'msg': 'all deleted'}, status=status.HTTP_204_NO_CONTENT)
+    
 
-    def delete(self, request, *args, **kwargs):
-        print('haha')
+class ListDetailView(APIView):
+    def get (self, request, id):
+        try:
+            obj = List.objects.get(id=id)
+        except List.DoesNotExist:
+            msg = {"msg": "not found"}
+            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ListSerializer(obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+    
+    def put (self, request, id):
+        try:
+            obj = List.objects.get(id=id)
+        except List.DoesNotExist:
+            msg = {"msg": "not found"}
+            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ListSerializer(obj, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def delete (self, request, id):
+        try:
+            obj = List.objects.get(id=id)
+        except List.DoesNotExist:
+            msg = {"msg": "not found"}
+            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+        obj.list_removed = True
+        serializer = ListSerializer(data=obj)
+        if serializer.is_valid():
+            serializer.save()
+        obj.save()
+        return Response({'msg': 'deleted'}, status=status.HTTP_204_NO_CONTENT)

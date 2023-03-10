@@ -1,4 +1,4 @@
-# `Hướng dẫn Todolist back-end`
+# `Hướng dẫn Todolist backend`
 
 ## Giới thiệu
 
@@ -171,6 +171,7 @@ class ToDoListApiView(generics.ListCreateAPIView):
     serializer_class = ToDoListSerializer
     #phương thức get không có id dùng để get tất cả các data trong ListDo, kể cả trường list, nhưng trường list ở đây chỉ trả về giá trị là id của list mà ListDo tham chiếu tới
     def get(self, request):
+        #lúc get dữ liệu chỉ lấy những object có trường removed=False
         obj = ListDo.objects.filter(removed=False)
         serializer = ToDoListSerializer(obj, many=True)
         return Response(serializer.data, status=200)
@@ -271,5 +272,144 @@ class ToDoDetailView(APIView):
         return Response({'msg': 'deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 ```
+
 Tương tự nhuư hàm trên thì để gọi được `ToDoDetailView` thực thi ta cũng phải gọi nó trong file `urls.py`
 
+```python
+from django.urls import re_path as url
+from django.urls import path
+from .views import ToDoListApiView, ToDoDetailView
+
+urlpatterns = [
+    path('api/<int:id>', ToDoDetailView.as_view()),
+    path('api/', ToDoListApiView.as_view()),
+]
+```
+
+Nhưng khác với `ToDoListApiView`, `ToDoDetailView` cần cung cấp một id đầu vào nên đằng sau đường dẫn chúng ta cần truyền vào một dữ liệu kiểu int là `<int:id>`. Như vậy, sau khi truy cập vào đường link http://127.0.0.1:8000/api/id1 thì sẽ nhận được kết quả trả về là một đối tượng có địa chỉ id là id1.
+
+Sau khi up danh sách các việc cần làm, ở font-end có nhu cầu muốn thay đổi vị trí các việc cần làm, sau khi thay đổi vị trí, giá trị order sẽ đươc font-end thay đổi, việc của tôi cần làm là update các giá trị sau khi thay đổi trên font-end.
+
+Tôi cần viết thêm một class mới ở file `views.py`:
+
+```python
+class UpdateOrder(generics.ListCreateAPIView):
+    queryset = ListDo.objects.filter(removed=False)
+    serializer_class = ToDoListSerializer
+    #Sử dụng ListCreateAPIView mà không sử dụng UpdateAPIView vì ListCreateAPIView có hỗ trọ 3 phương thức GET, PUT, POST trong khi đó UpdateAPIView chỉ hỗ trợ phương thức PUT mà không có GET
+    #Viết một hàm GET để sau khi sửa dữu liệu dưới database sẽ hỗ trợ load dữ liệu lên font-end
+    def get(self, request):
+        obj = ListDo.objects.filter(removed=False)
+        serializer = ToDoListSerializer(obj, many=True)
+        return Response(serializer.data, status=200)
+
+    #Hàm put ở đây dùng để lấy list tất cả các object ListDo đang có trên font-end sau đó ghi đè lên list đang được lưu ở CSDL.
+    def put(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        instances = list(queryset)
+        count = len(instances)
+        data = [request.data]
+        #in giá trị data get về để kiểm tra giá trị có như mong muốn
+        print(data)
+        serializer = ToDoListSerializer(instances, data, many=True, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_list_update(serializer)
+        return Response(status=204)
+
+    #Hàm perform_list_update gồn 2 vòng for để ghi đè tất cả giá trị trong list request được lên database.
+    def perform_list_update(self, serializer):
+        for instance, data in zip(serializer.instance, serializer.validated_data):
+            for attr, value in data.items():
+                setattr(instance, attr, value)
+            instance.save()
+```
+
+Gọi hàm ở `urls.py` để thực thi:
+
+```python
+from django.urls import re_path as url
+from django.urls import path
+from .views import ToDoListApiView, ToDoDetailView, UpdateOrder
+
+urlpatterns = [
+    path('api/<int:id>', ToDoDetailView.as_view()),
+    path('api/', ToDoListApiView.as_view()),
+    path('api/update', UpdateOrder.as_view()),
+]
+```
+
+Như vậy api ở http://127.0.0.1:8000/api/update sẽ trả về 2 method là GET và PUT, GET để load dữ liệu và PUT để thay đổi dữ liệu trong database.
+
+Sau khi viết các API cho `ListDo`, tôi sẽ tiến hành viết API cho các List với các phương thức GET, POST, PUT, DELETE như `ListDo`
+
+```python
+class ListAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        obj = List.objects.all()
+        serializer = ListSerializer(obj, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = ListSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+    def delete(self, request):
+        list_todo = List.objects.all()
+        for obj in list_todo:
+            obj.list_removed = True
+            serializer = ListSerializer(data=obj)
+            if serializer.is_valid():
+                serializer.save()
+            obj.save()
+        return Response({'msg': 'all deleted'}, status=status.HTTP_204_NO_CONTENT)
+
+
+class ListDetailView(APIView):
+    def get (self, request, id):
+        try:
+            obj = List.objects.get(id=id)
+        except List.DoesNotExist:
+            msg = {"msg": "not found"}
+            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ListSerializer(obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+    def put (self, request, id):
+        try:
+            obj = List.objects.get(id=id)
+        except List.DoesNotExist:
+            msg = {"msg": "not found"}
+            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ListSerializer(obj, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def delete (self, request, id):
+        try:
+            obj = List.objects.get(id=id)
+        except List.DoesNotExist:
+            msg = {"msg": "not found"}
+            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+        obj.list_removed = True
+        serializer = ListSerializer(data=obj)
+        if serializer.is_valid():
+            serializer.save()
+        obj.save()
+        return Response({'msg': 'deleted'}, status=status.HTTP_204_NO_CONTENT)
+
+```
+
+Tôi cũng viết 2 class, 1 class hỗ trợ cho việc GET, POST, DELETE mà không cần địa chỉ id. Ở API này khi gọi đến hàm DELETE, sẽ thực hiện xóa (`removed`=true) toàn bộ List trong CSDL. 1 class hỗ trợ GET, PUT, DELETE với địa chỉ id đầu vào.
+
+# Kết Luận
+
+Project của mình bao gồm các api đơn giản như thêm, xóa, sửa nhưng nó là dự án đầu tiên của mình nên có thể có khá nhiều khó khăn trong việc tìm hiểu và tiếp xúc với công nghệ mới, vì vậy có thể có một vài lỗi không mong muốn, cũng như việc code không được tối ưu. Mình hy vọng mọi người đọc bài viết này có thể để lại một ý kiến để mình có thể sửa lỗi và cải thiện hơn trên con đường theo đuổi django của mình. Cảm ơn và chúc các bạn có một ngày vui vẻ.
+
+link github: https://github.com/ThanhNhan201/List_do.git
