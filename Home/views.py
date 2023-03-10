@@ -11,8 +11,8 @@ class ToDoListApiView(generics.ListCreateAPIView):
     queryset = ListDo.objects.filter(removed=False)
     serializer_class = ToDoListSerializer
     def get(self, request):
-        obj = ListDo.objects.all()
-        # obj = ListDo.objects.filt+er(removed=False)
+        # obj = ListDo.objects.all()
+        obj = ListDo.objects.filter(removed=False)
         serializer = ToDoListSerializer(obj, many=True)
         return Response(serializer.data, status=200)
 
