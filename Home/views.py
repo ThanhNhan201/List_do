@@ -11,8 +11,8 @@ class ToDoListApiView(generics.ListCreateAPIView):
     queryset = ListDo.objects.filter(removed=False)
     serializer_class = ToDoListSerializer
     def get(self, request):
-        # obj = ListDo.objects.all()
-        obj = ListDo.objects.filter(removed=False)
+        obj = ListDo.objects.all()
+        # obj = ListDo.objects.filt+er(removed=False)
         serializer = ToDoListSerializer(obj, many=True)
         return Response(serializer.data, status=200)
 
@@ -39,6 +39,9 @@ class ToDoDetailView(APIView):
     def get (self, request, id):
         try:
             obj = ListDo.objects.get(id=id)
+            if (obj.removed==True):
+                msg = {"msg": "be removed"}
+                return Response(msg)
         except ListDo.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
@@ -76,7 +79,8 @@ class ToDoDetailView(APIView):
 
 class UpdateOrder(generics.ListCreateAPIView):
     def get(self, request):
-        obj = ListDo.objects.filter(removed=False)
+        # obj = ListDo.objects.filter(removed=False)
+        obj = ListDo.objects.all()
         serializer = ToDoListSerializer(obj, many=True)
         return Response(serializer.data, status=200)
     queryset = ListDo.objects.all()
@@ -91,7 +95,7 @@ class UpdateOrder(generics.ListCreateAPIView):
         # for i in range(count):
         #     x = data.request
         #     data = np.concatenate((data, x), axis=0)
-        data = [request.data] * count
+        data = [request.data]
         # import array as arr
         # a = arr.array('d', [data])
         print(data)

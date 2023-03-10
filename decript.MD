@@ -237,6 +237,9 @@ class ToDoDetailView(APIView):
     def get (self, request, id):
         try:
             obj = ListDo.objects.get(id=id)
+            if (obj.removed==True):
+                msg = {"msg": "be removed"}
+                return Response(msg)
         except ListDo.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
@@ -408,6 +411,236 @@ class ListDetailView(APIView):
 ```
 
 Tôi cũng viết 2 class, 1 class hỗ trợ cho việc GET, POST, DELETE mà không cần địa chỉ id. Ở API này khi gọi đến hàm DELETE, sẽ thực hiện xóa (`removed`=true) toàn bộ List trong CSDL. 1 class hỗ trợ GET, PUT, DELETE với địa chỉ id đầu vào.
+
+# API
+
+## `http://127.0.0.1:8000/api/`
+
+- GET
+
+output :
+
+```api
+[
+    {
+        "id": 25,
+        "order": 2,
+        "color_bg": "000",
+        "content": "haha 3",
+        "is_completed": false,
+        "created_at": "2023-03-10T05:39:48.748409Z",
+        "updated_at": "2023-03-10T05:39:48.748409Z",
+        "removed": false,
+        "list": null
+    },
+    {
+        "id": 26,
+        "order": 2,
+        "color_bg": "000",
+        "content": "haha 3",
+        "is_completed": false,
+        "created_at": "2023-03-10T05:40:00.012756Z",
+        "updated_at": "2023-03-10T05:40:00.012756Z",
+        "removed": false,
+        "list": null
+    }
+]
+```
+
+- POST
+
+input:
+
+```API
+{
+    "order":5,
+    "color_bg":"aaa",
+    "content":"hello",
+}
+```
+
+output :
+
+```API
+{
+    "id": 27,
+    "order": 5,
+    "color_bg": "aaa",
+    "content": "hello",
+    "is_completed": false,
+    "created_at": "2023-03-10T05:46:33.242056Z",
+    "updated_at": "2023-03-10T05:46:33.242056Z",
+    "removed": false,
+    "list": null
+}
+```
+
+- DELETE
+
+output :
+
+```API
+{
+    "msg": "all deleted"
+}
+```
+
+sau khi sử dụng phương thức DELETE, sử dụng hàm GET sẽ có kết quả:
+
+```
+[]
+```
+
+Nhưng nếu chúng ta thay đổi code ở hàm GET từ
+
+```python
+obj = ListDo.objects.filter(removed=False)
+```
+
+Thành
+
+```python
+obj = ListDo.objects.all()
+```
+
+Ta sẽ được kết quả là
+
+```API
+[
+    {
+        "id": 26,
+        "order": 2,
+        "color_bg": "000",
+        "content": "haha 3",
+        "is_completed": false,
+        "created_at": "2023-03-10T05:40:00.012756Z",
+        "updated_at": "2023-03-10T05:48:34.315609Z",
+        "removed": true,
+        "list": null
+    },
+    {
+        "id": 27,
+        "order": 5,
+        "color_bg": "aaa",
+        "content": "hello",
+        "is_completed": false,
+        "created_at": "2023-03-10T05:46:33.242056Z",
+        "updated_at": "2023-03-10T05:48:34.331831Z",
+        "removed": true,
+        "list": null
+    }
+]
+```
+
+Tức là các object này không bị xóa đi khỏi CSDL mà chỉ gáng biến `removed`=True, và phương thức GET sử dụng filter để lọc ra những đối tượng có biến `removed`=False.
+
+## `http://127.0.0.1:8000/api/<int:id>`
+
+- GET
+
+Phương thức này sẽ GET một đối tượng của một giá trị id cụ thể, ví dụ với http://127.0.0.1:8000/api/27 sẽ trả về output là đối tượng có id 27, nhưng vì ở đây đối tượng có id 27 đã bị xóa nên sẽ trả về:
+
+```API
+{
+    "msg": "be removed"
+}
+```
+
+Tương tự nếu GET một đối tượng chưa bị xóa thì kết quả output sẽ là:
+
+```API
+{
+    "id": 28,
+    "order": 5,
+    "color_bg": "aaa",
+    "content": "object 28",
+    "is_completed": false,
+    "created_at": "2023-03-10T06:08:20.823485Z",
+    "updated_at": "2023-03-10T06:08:20.823485Z",
+    "removed": false,
+    "list": null
+}
+```
+
+- PUT
+
+Ví dụ ở đây, chúng ta sẽ sửa `color_bg` từ `aaa` thành `000` object thứ 28, output:
+
+```API
+{
+    "id": 28,
+    "order": 5,
+    "color_bg": "000",
+    "content": "object 28",
+    "is_completed": false,
+    "created_at": "2023-03-10T06:08:20.823485Z",
+    "updated_at": "2023-03-10T06:14:19.034899Z",
+    "removed": false,
+    "list": null
+}
+```
+
+\*DELETE
+
+output:
+
+```API
+{
+    "msg": "deleted"
+}
+```
+
+Tương tự như phương thức DELETE ở trên, thì phương thức DELETE ở đây cũng chỉ gáng biến `removed`=False chứ không xóa khỏi CSDL.
+
+##
+
+- Update (PUT)
+
+input :
+
+```API
+[<QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>, <QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>, <QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>]
+```
+
+output :
+
+```API
+[
+    {
+        "id": 26,
+        "order": 5,
+        "color_bg": "000",
+        "content": "object update",
+        "is_completed": false,
+        "created_at": "2023-03-10T05:40:00.012756Z",
+        "updated_at": "2023-03-10T06:25:13.429955Z",
+        "removed": false,
+        "list": null
+    },
+    {
+        "id": 27,
+        "order": 5,
+        "color_bg": "000",
+        "content": "object update",
+        "is_completed": false,
+        "created_at": "2023-03-10T05:46:33.242056Z",
+        "updated_at": "2023-03-10T06:25:13.446031Z",
+        "removed": false,
+        "list": null
+    },
+    {
+        "id": 28,
+        "order": 5,
+        "color_bg": "000",
+        "content": "object update",
+        "is_completed": false,
+        "created_at": "2023-03-10T06:08:20.823485Z",
+        "updated_at": "2023-03-10T06:25:13.454066Z",
+        "removed": false,
+        "list": null
+    }
+]
+```
 
 # Kết Luận
 
