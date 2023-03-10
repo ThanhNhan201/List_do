@@ -70,7 +70,7 @@ python -m venv venv
 
 # Models và Databases
 
-Models là phần định nghĩa mô hình dữ liệu của Django. Ở project của tôi sẽ có 2 models chính có quan hệ one to many với nhau.
+Models là phần định nghĩa mô hình dữ liệu của Django. Ở project của tôi sẽ có 2 models chính có quan hệ one-to-many với nhau.
 
 ```python
 from django.db import models
@@ -341,7 +341,7 @@ urlpatterns = [
 
 Như vậy api ở http://127.0.0.1:8000/api/update sẽ trả về 2 method là GET và PUT, GET để load dữ liệu và PUT để thay đổi dữ liệu trong database.
 
-Sau khi viết các API cho `ListDo`, tôi sẽ tiến hành viết API cho các List với các phương thức GET, POST, PUT, DELETE như `ListDo`
+Sau khi viết các API cho `ListDo`, tôi sẽ tiến hành viết API cho các `List` với các phương thức GET, POST, PUT, DELETE như `ListDo`
 
 ```python
 class ListAPIView(APIView):
