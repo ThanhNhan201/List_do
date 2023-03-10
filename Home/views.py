@@ -95,7 +95,7 @@ class UpdateOrder(generics.ListCreateAPIView):
         # for i in range(count):
         #     x = data.request
         #     data = np.concatenate((data, x), axis=0)
-        data = [request.data]
+        data = [request.data] * count
         # import array as arr
         # a = arr.array('d', [data])
         print(data)

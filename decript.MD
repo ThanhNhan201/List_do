@@ -601,45 +601,47 @@ Hàm Update ở đây chỉ hỗ trợ ghi đè tất cả giá trị mà font-e
 input :
 
 ```API
-[<QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>,
- <QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>,
- <QueryDict: {'content': ['object update'], 'order': ['5'], 'color_bg': ['000'], 'removed': ['0']}>]
+[
+    <QueryDict: {'content': ['kkk'], 'order': ['1']}>,
+    <QueryDict: {'content': ['kkk'], 'order': ['1']}>,
+    <QueryDict: {'content': ['kkk'], 'order': ['1']}>
+]
 ```
 
-output :
+Sau khi sử dụng hàm Update trên, sử dụng hàm GET sẽ cho ra output :
 
 ```API
 [
     {
         "id": 26,
-        "order": 5,
+        "order": 1,
         "color_bg": "000",
-        "content": "object update",
+        "content": "kkk",
         "is_completed": false,
         "created_at": "2023-03-10T05:40:00.012756Z",
-        "updated_at": "2023-03-10T06:25:13.429955Z",
+        "updated_at": "2023-03-10T07:02:19.100389Z",
         "removed": false,
         "list": null
     },
     {
         "id": 27,
-        "order": 5,
+        "order": 1,
         "color_bg": "000",
-        "content": "object update",
+        "content": "kkk",
         "is_completed": false,
         "created_at": "2023-03-10T05:46:33.242056Z",
-        "updated_at": "2023-03-10T06:25:13.446031Z",
+        "updated_at": "2023-03-10T07:02:19.120153Z",
         "removed": false,
         "list": null
     },
     {
         "id": 28,
-        "order": 5,
+        "order": 1,
         "color_bg": "000",
-        "content": "object update",
+        "content": "kkk",
         "is_completed": false,
         "created_at": "2023-03-10T06:08:20.823485Z",
-        "updated_at": "2023-03-10T06:25:13.454066Z",
+        "updated_at": "2023-03-10T07:02:19.140624Z",
         "removed": false,
         "list": null
     }
