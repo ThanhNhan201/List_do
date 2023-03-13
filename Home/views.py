@@ -11,7 +11,7 @@ class ToDoListApiView(generics.ListCreateAPIView):
     queryset = ListDo.objects.filter(removed=False)
     serializer_class = ToDoListSerializer
     def get(self, request):
-        # obj = ListDo.objects.all()
+        obj = ListDo.objects.all()
         obj = ListDo.objects.filter(removed=False)
         serializer = ToDoListSerializer(obj, many=True)
         return Response(serializer.data, status=200)
@@ -53,6 +53,9 @@ class ToDoDetailView(APIView):
     def put (self, request, id):
         try:
             obj = ListDo.objects.get(id=id)
+            if (obj.removed==True):
+                msg = {"msg": "be removed"}
+                return Response(msg)
         except ListDo.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
@@ -66,6 +69,9 @@ class ToDoDetailView(APIView):
     def delete (self, request, id):
         try:
             obj = ListDo.objects.get(id=id)
+            if (obj.removed==True):
+                msg = {"msg": "be removed"}
+                return Response(msg)
         except ListDo.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
@@ -79,12 +85,12 @@ class ToDoDetailView(APIView):
 
 class UpdateOrder(generics.ListCreateAPIView):
     def get(self, request):
-        # obj = ListDo.objects.filter(removed=False)
-        obj = ListDo.objects.all()
+        obj = ListDo.objects.filter(removed=False)
+        # obj = ListDo.objects.all()
         serializer = ToDoListSerializer(obj, many=True)
         return Response(serializer.data, status=200)
-    queryset = ListDo.objects.all()
-    # queryset = ListDo.objects.filter(removed=False)
+    # queryset = ListDo.objects.all()
+    queryset = ListDo.objects.filter(removed=False)
     serializer_class = ToDoListSerializer
     def put(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -95,11 +101,11 @@ class UpdateOrder(generics.ListCreateAPIView):
         # for i in range(count):
         #     x = data.request
         #     data = np.concatenate((data, x), axis=0)
-        data = [request.data] * count
+        data = request.data
         # import array as arr
         # a = arr.array('d', [data])
         print(data)
-        serializer = ToDoListSerializer(instances, data, many=True, partial=True)
+        serializer = ToDoListSerializer(instances, data, many=True)
         serializer.is_valid(raise_exception=True)
         self.perform_list_update(serializer)
         return Response(status=204)
@@ -113,7 +119,7 @@ class UpdateOrder(generics.ListCreateAPIView):
 ###################
 class ListAPIView(APIView):
     def get(self, request, *args, **kwargs):
-        obj = List.objects.all()
+        obj = List.objects.filter(list_removed=False)
         serializer = ListSerializer(obj, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -138,6 +144,9 @@ class ListDetailView(APIView):
     def get (self, request, id):
         try:
             obj = List.objects.get(id=id)
+            if (obj.list_removed==True):
+                msg = {"msg": "be removed"}
+                return Response(msg)
         except List.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
@@ -149,6 +158,9 @@ class ListDetailView(APIView):
     def put (self, request, id):
         try:
             obj = List.objects.get(id=id)
+            if (obj.list_removed==True):
+                msg = {"msg": "be removed"}
+                return Response(msg)
         except List.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
@@ -162,6 +174,9 @@ class ListDetailView(APIView):
     def delete (self, request, id):
         try:
             obj = List.objects.get(id=id)
+            if (obj.list_removed==True):
+                msg = {"msg": "be removed"}
+                return Response(msg)
         except List.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)

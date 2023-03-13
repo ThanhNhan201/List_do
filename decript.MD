@@ -349,7 +349,7 @@ Sau khi viết các API cho `ListDo`, tôi sẽ tiến hành viết API cho các
 ```python
 class ListAPIView(APIView):
     def get(self, request, *args, **kwargs):
-        obj = List.objects.all()
+        obj = List.objects.filter(list_removed=False)
         serializer = ListSerializer(obj, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -368,12 +368,15 @@ class ListAPIView(APIView):
                 serializer.save()
             obj.save()
         return Response({'msg': 'all deleted'}, status=status.HTTP_204_NO_CONTENT)
-
+    
 
 class ListDetailView(APIView):
     def get (self, request, id):
         try:
             obj = List.objects.get(id=id)
+            if (obj.list_removed==True):
+                msg = {"msg": "be removed"}
+                return Response(msg)
         except List.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
@@ -381,10 +384,13 @@ class ListDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-
+    
     def put (self, request, id):
         try:
             obj = List.objects.get(id=id)
+            if (obj.list_removed==True):
+                msg = {"msg": "be removed"}
+                return Response(msg)
         except List.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
@@ -398,6 +404,9 @@ class ListDetailView(APIView):
     def delete (self, request, id):
         try:
             obj = List.objects.get(id=id)
+            if (obj.list_removed==True):
+                msg = {"msg": "be removed"}
+                return Response(msg)
         except List.DoesNotExist:
             msg = {"msg": "not found"}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
@@ -407,7 +416,6 @@ class ListDetailView(APIView):
             serializer.save()
         obj.save()
         return Response({'msg': 'deleted'}, status=status.HTTP_204_NO_CONTENT)
-
 ```
 
 Tôi cũng viết 2 class, 1 class hỗ trợ cho việc GET, POST, DELETE mà không cần địa chỉ id. Ở API này khi gọi đến hàm DELETE, sẽ thực hiện xóa (`removed`=true) toàn bộ List trong CSDL. 1 class hỗ trợ GET, PUT, DELETE với địa chỉ id đầu vào.
@@ -423,26 +431,26 @@ output :
 ```api
 [
     {
-        "id": 25,
-        "order": 2,
-        "color_bg": "000",
-        "content": "haha 3",
+        "id": 29,
+        "order": 1,
+        "color_bg": "123",
+        "content": "lam viec nha",
         "is_completed": false,
-        "created_at": "2023-03-10T05:39:48.748409Z",
-        "updated_at": "2023-03-10T05:39:48.748409Z",
+        "created_at": "2023-03-13T07:28:00.221305Z",
+        "updated_at": "2023-03-13T07:28:00.221341Z",
         "removed": false,
-        "list": null
+        "list": 5
     },
     {
-        "id": 26,
+        "id": 30,
         "order": 2,
-        "color_bg": "000",
-        "content": "haha 3",
+        "color_bg": "345",
+        "content": "lau nha",
         "is_completed": false,
-        "created_at": "2023-03-10T05:40:00.012756Z",
-        "updated_at": "2023-03-10T05:40:00.012756Z",
+        "created_at": "2023-03-13T07:28:14.663467Z",
+        "updated_at": "2023-03-13T07:28:14.663500Z",
         "removed": false,
-        "list": null
+        "list": 5
     }
 ]
 ```
@@ -456,6 +464,7 @@ input:
     "order":5,
     "color_bg":"aaa",
     "content":"hello",
+    "list":5,
 }
 ```
 
@@ -463,15 +472,15 @@ output :
 
 ```API
 {
-    "id": 27,
+    "id": 31,
     "order": 5,
     "color_bg": "aaa",
     "content": "hello",
     "is_completed": false,
-    "created_at": "2023-03-10T05:46:33.242056Z",
-    "updated_at": "2023-03-10T05:46:33.242056Z",
+    "created_at": "2023-03-13T07:29:31.951608Z",
+    "updated_at": "2023-03-13T07:29:31.951650Z",
     "removed": false,
-    "list": null
+    "list": 5
 }
 ```
 
@@ -505,29 +514,40 @@ obj = ListDo.objects.all()
 
 Ta sẽ được kết quả là
 
-```API
+```json
 [
     {
-        "id": 26,
-        "order": 2,
-        "color_bg": "000",
-        "content": "haha 3",
+        "id": 29,
+        "order": 1,
+        "color_bg": "123",
+        "content": "lam viec nha",
         "is_completed": false,
-        "created_at": "2023-03-10T05:40:00.012756Z",
-        "updated_at": "2023-03-10T05:48:34.315609Z",
+        "created_at": "2023-03-13T07:28:00.221305Z",
+        "updated_at": "2023-03-13T07:32:25.252335Z",
         "removed": true,
-        "list": null
+        "list": 5
     },
     {
-        "id": 27,
+        "id": 30,
+        "order": 2,
+        "color_bg": "345",
+        "content": "lau nha",
+        "is_completed": false,
+        "created_at": "2023-03-13T07:28:14.663467Z",
+        "updated_at": "2023-03-13T07:32:25.255214Z",
+        "removed": true,
+        "list": 5
+    },
+    {
+        "id": 31,
         "order": 5,
         "color_bg": "aaa",
         "content": "hello",
         "is_completed": false,
-        "created_at": "2023-03-10T05:46:33.242056Z",
-        "updated_at": "2023-03-10T05:48:34.331831Z",
+        "created_at": "2023-03-13T07:29:31.951608Z",
+        "updated_at": "2023-03-13T07:32:25.257125Z",
         "removed": true,
-        "list": null
+        "list": 5
     }
 ]
 ```
@@ -540,7 +560,7 @@ Tức là các object này không bị xóa đi khỏi CSDL mà chỉ gáng bi�
 
 Phương thức này sẽ GET một đối tượng của một giá trị id cụ thể, ví dụ với http://127.0.0.1:8000/api/27 sẽ trả về output là đối tượng có id 27, nhưng vì ở đây đối tượng có id 27 đã bị xóa nên sẽ trả về:
 
-```API
+```json
 {
     "msg": "be removed"
 }
@@ -548,43 +568,43 @@ Phương thức này sẽ GET một đối tượng của một giá trị id c�
 
 Tương tự nếu GET một đối tượng chưa bị xóa thì kết quả output sẽ là:
 
-```API
+```json
 {
-    "id": 28,
-    "order": 5,
-    "color_bg": "aaa",
-    "content": "object 28",
+    "id": 29,
+    "order": 1,
+    "color_bg": "123",
+    "content": "lam viec nha",
     "is_completed": false,
-    "created_at": "2023-03-10T06:08:20.823485Z",
-    "updated_at": "2023-03-10T06:08:20.823485Z",
+    "created_at": "2023-03-13T07:28:00.221305Z",
+    "updated_at": "2023-03-13T07:37:13.842621Z",
     "removed": false,
-    "list": null
+    "list": 5
 }
 ```
 
 - PUT
 
-Ví dụ ở đây, chúng ta sẽ sửa `color_bg` từ `aaa` thành `000` object thứ 28, output:
+Ví dụ ở đây, chúng ta sẽ sửa `color_bg` từ `123` thành `456` object thứ 29, output:
 
-```API
+```json
 {
-    "id": 28,
-    "order": 5,
-    "color_bg": "000",
-    "content": "object 28",
+    "id": 29,
+    "order": 1,
+    "color_bg": "456",
+    "content": "lam viec nha",
     "is_completed": false,
-    "created_at": "2023-03-10T06:08:20.823485Z",
-    "updated_at": "2023-03-10T06:14:19.034899Z",
+    "created_at": "2023-03-13T07:28:00.221305Z",
+    "updated_at": "2023-03-13T07:39:53.789505Z",
     "removed": false,
-    "list": null
+    "list": 5
 }
 ```
 
-\*DELETE
+* DELETE
 
 output:
 
-```API
+```json
 {
     "msg": "deleted"
 }
@@ -600,54 +620,142 @@ Hàm Update ở đây chỉ hỗ trợ ghi đè tất cả giá trị mà font-e
 
 input :
 
-```API
+```json
 [
-    <QueryDict: {'content': ['kkk'], 'order': ['1']}>,
-    <QueryDict: {'content': ['kkk'], 'order': ['1']}>,
-    <QueryDict: {'content': ['kkk'], 'order': ['1']}>
+    {"id":29,"order":11,"color_bg":"456","content":"lam viec nha","is_completed":false,"created_at":"2023-03-13T07:28:00.221305Z","updated_at":"2023-03-13T07:39:53.789505Z","removed":false,"list":5},
+    {"id":31,"order":12,"color_bg":"aaa","content":"hello","is_completed":false,"created_at":"2023-03-13T07:29:31.951608Z","updated_at":"2023-03-13T07:37:13.847465Z","removed":false,"list":5}
 ]
 ```
 
 Sau khi sử dụng hàm Update trên, sử dụng hàm GET sẽ cho ra output :
 
-```API
+```json
 [
     {
-        "id": 26,
-        "order": 1,
-        "color_bg": "000",
-        "content": "kkk",
+        "id": 29,
+        "order": 11,
+        "color_bg": "456",
+        "content": "lam viec nha",
         "is_completed": false,
-        "created_at": "2023-03-10T05:40:00.012756Z",
-        "updated_at": "2023-03-10T07:02:19.100389Z",
+        "created_at": "2023-03-13T07:28:00.221305Z",
+        "updated_at": "2023-03-13T07:42:07.178773Z",
         "removed": false,
-        "list": null
+        "list": 5
     },
     {
-        "id": 27,
-        "order": 1,
-        "color_bg": "000",
-        "content": "kkk",
+        "id": 31,
+        "order": 12,
+        "color_bg": "aaa",
+        "content": "hello",
         "is_completed": false,
-        "created_at": "2023-03-10T05:46:33.242056Z",
-        "updated_at": "2023-03-10T07:02:19.120153Z",
+        "created_at": "2023-03-13T07:29:31.951608Z",
+        "updated_at": "2023-03-13T07:42:07.181898Z",
         "removed": false,
-        "list": null
-    },
-    {
-        "id": 28,
-        "order": 1,
-        "color_bg": "000",
-        "content": "kkk",
-        "is_completed": false,
-        "created_at": "2023-03-10T06:08:20.823485Z",
-        "updated_at": "2023-03-10T07:02:19.140624Z",
-        "removed": false,
-        "list": null
+        "list": 5
     }
 ]
 ```
+## `http://0.0.0.0:8080/api/list`
+* GET
 
+output:
+
+```json
+[
+    {
+        "id": 5,
+        "list_create_at": "2023-03-08T06:19:55.453806Z",
+        "list_update_at": "2023-03-13T07:45:57.331126Z",
+        "list_removed": false,
+        "ping": false,
+        "list_completed": false
+    },
+    {
+        "id": 9,
+        "list_create_at": "2023-03-08T10:15:55.881290Z",
+        "list_update_at": "2023-03-08T10:15:55.881329Z",
+        "list_removed": false,
+        "ping": false,
+        "list_completed": false
+    }
+]
+```
+* POST
+
+input:
+
+```json
+{
+    "ping": true,
+    "list_completed": false
+}
+```
+output:
+```json
+{
+    "id": 10,
+    "list_create_at": "2023-03-13T07:53:23.898468Z",
+    "list_update_at": "2023-03-13T07:53:23.898548Z",
+    "list_removed": false,
+    "ping": true,
+    "list_completed": false
+}
+```
+* DELETE
+
+output:
+```json
+{
+    "msg": "all deleted"
+}
+```
+## `http://0.0.0.0:8080/api/list/<int:id>`
+* GET: http://0.0.0.0:8080/api/list/9
+
+output:
+```json
+{
+    "id": 9,
+    "list_create_at": "2023-03-08T10:15:55.881290Z",
+    "list_update_at": "2023-03-08T10:15:55.881329Z",
+    "list_removed": false,
+    "ping": false,
+    "list_completed": false
+}
+```
+GET 1 phần tử đã bị xóa, output:
+```json
+{
+    "msg": "be removed"
+}
+```
+* PUT http://0.0.0.0:8080/api/list/9
+
+input:
+```json
+{
+    "list_completed": true
+}
+```
+output:
+```json
+{
+    "id": 9,
+    "list_create_at": "2023-03-08T10:15:55.881290Z",
+    "list_update_at": "2023-03-13T08:02:12.003763Z",
+    "list_removed": false,
+    "ping": false,
+    "list_completed": true
+}
+```
+* DELETE http://0.0.0.0:8080/api/list/5
+
+output:
+```json
+{
+    "msg": "deleted"
+}
+```
 # Kết Luận
 
 Project của mình bao gồm các api đơn giản như thêm, xóa, sửa nhưng nó là dự án đầu tiên của mình nên có thể có khá nhiều khó khăn trong việc tìm hiểu và tiếp xúc với công nghệ mới, vì vậy có thể có một vài lỗi không mong muốn, cũng như việc code không được tối ưu. Mình hy vọng mọi người đọc bài viết này có thể để lại một ý kiến để mình có thể sửa lỗi và cải thiện hơn trên con đường theo đuổi django của mình. Cảm ơn và chúc các bạn có một ngày vui vẻ.
